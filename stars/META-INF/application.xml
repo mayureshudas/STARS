@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE application PUBLIC "-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN" "http://java.sun.com/dtd/application_1_3.dtd"><application id="Application_ID">
+<display-name>stars</display-name>
+	<description>stars release 2.1.0.1.25</description>
+	<module id="JavaClientModule_1101275067317">
+		<java>starsClient.jar</java>
+	</module>
+	<module id="JavaClientModule_1101275067318">
+		<java>starsCommon.jar</java>
+	</module>
+	<module id="EjbModule_1101275067332">
+		<ejb>starsEJB.jar</ejb>
+	</module>
+	<module id="WebModule_1101275067332">
+		<web>
+			<web-uri>starsWeb.war</web-uri>
+			<context-root>stars</context-root>
+		</web>
+	</module>
+	
+</application>
