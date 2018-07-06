@@ -1,0 +1,116 @@
+/*
+ * GenericModel.java
+ *
+ * Created on January 9, 2002, 9:50 AM
+ */
+
+package com.wb.stars.model;
+
+import java.util.LinkedList;
+
+/**
+ *
+ * @author  Oleg Yevteyev
+ * @version 1.0
+ */
+
+import com.wb.stars.utils.*;
+import java.util.LinkedList;
+import com.wb.stars.ejb.session.*;
+import com.wb.stars.ejb.utils.*;
+
+public class GenericModel implements java.io.Serializable {
+
+	private RecordSetContainer lList;
+	private static final String TD = "<TD>\n";
+	private static final String TR = "<TR>\n";
+	private static final String ETD = "</TD>\n";
+	private static final String ETR = "</TR>\n";
+	private static final String TB =
+		"<TABLE cellpadding=3 cellspacing=0 border=1>\n";
+	private static final String ETB = "</TABLE>\n";
+	private static final int COLUMNS = 7;
+	private static final String EMPTY = "&nbsp";
+
+	/** Creates new GenericModel */
+	public GenericModel() {
+	}
+
+	public GenericModel(LinkedList ll) {
+		lList = new RecordSetContainer(ll);
+	}
+
+	/** Getter for property lList.
+	 * @return Value of property lList.
+	 */
+	public RecordSetContainer getLList() {
+		return lList;
+	}
+
+	/** Setter for property lList.
+	 * @param lList New value of property lList.
+	 */
+	public void setLList(RecordSetContainer lList) {
+		this.lList = lList;
+	}
+	/**
+	 * @return  */
+	public String toHTML() {
+
+		StringBuffer tableHeader = new StringBuffer(TB);
+		StringBuffer tableFooter = new StringBuffer(ETB);
+		StringBuffer tableBody = new StringBuffer();
+		StringBuffer table = new StringBuffer();
+		lList.reset();
+		while (lList.next()) {
+			tableBody.append(TR);
+			for (int i = 0; i < COLUMNS; i++) {
+				tableBody.append(TD);
+				String value = lList.getValue(i);
+				if (value == null || value.trim().length() == 0)
+					value = EMPTY;
+				tableBody.append(value);
+				tableBody.append(ETD);
+			}
+			tableBody.append(ETR);
+		}
+		table.append(tableHeader.toString());
+		table.append(tableBody.toString());
+		table.append(tableFooter.toString());
+		return table.toString();
+	}
+
+	/**
+	 * @param sql
+	 * @return  */
+	private LinkedList runSQL(String sql) {
+		LinkedList results = null;
+		try {
+
+			SQLQuerierRemoteHome qrhome =
+				(SQLQuerierRemoteHome) EJBHomeFactory.getFactory().lookUpHome(
+					"SQLQuerier",
+					SQLQuerierRemoteHome.class);
+
+			SQLQuerierRemote qr = qrhome.create();
+
+			results = qr.execSQL(sql);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (null == results) {
+			results = new LinkedList();
+		}
+		return results;
+
+	}
+
+	public String getSingleColumnData() {
+		lList.reset();
+		StringBuffer sb = new StringBuffer();
+		lList.next();
+		sb.append(lList.getValue(0));	
+		return sb.toString();
+	}
+
+}

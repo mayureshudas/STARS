@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Class-Path: EXML.jar commons-beanutils.jar commons-collections.jar com
+ mons-digester.jar commons-lang.jar commons-logging.jar commons-servic
+ es.jar commons-validator.jar jcs.jar jdom.jar jxl.jar log4j-1.2.8.jar
+  starsCommon.jar starsEJB.jar xalan.jar xerces.jar
+UseEJB61FEPScanPolicy: true
+

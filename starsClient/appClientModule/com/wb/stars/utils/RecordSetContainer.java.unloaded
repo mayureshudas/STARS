@@ -1,0 +1,184 @@
+/*
+ * RecordSetContainer.java
+ *
+ * Created on January 9, 2002, 10:18 AM
+ */
+
+package com.wb.stars.utils;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Vector;
+
+import com.wb.stars.ejb.session.SQLQuerierRemote;
+import com.wb.stars.ejb.session.SQLQuerierRemoteHome;
+import com.wb.stars.ejb.utils.EJBHomeFactory;
+
+/** A Wrapper around SQL statement
+ *
+ * @author Oleg Yevteyev
+ * @version 1.0
+ */
+public class RecordSetContainer implements OfflineRecordSet{
+    private static final String EMPTY_STRING = "";
+    private Iterator iter = null;
+    private String[] row  = null;
+    private LinkedList ll = null;
+    private Vector columnNames= new Vector();
+    
+    private int size = 0;
+    
+    /** Constructs a RecordSetContainer based on SQL Statement
+     * @param sql SQL Statement
+     */    
+    public RecordSetContainer( String sql ) {
+        ll = runSQL(sql);
+        size = ll.size();
+        iter = ll.iterator();
+    }
+    
+    /** Constructs a RecordSetContainer based on Linked List
+     * @param newLL a Lined List Input
+     */    
+    public RecordSetContainer( LinkedList newLL ) {
+        ll = newLL;
+        size = ll.size();
+        iter = ll.iterator();
+        if (newLL.get(0) instanceof Vector)
+        columnNames = (Vector) newLL.remove(0);
+    }
+    
+    public RecordSetContainer( LinkedList newLL, Vector v ) {
+        ll = newLL;
+        size = ll.size();
+        iter = ll.iterator();
+        columnNames=v;
+    }
+    
+    
+    public String getValue(String columnName){
+    	int colNumber=getColumnNumber(columnName);
+    	if(colNumber==-1)return EMPTY_STRING;
+    	else return getValue(colNumber);
+    }
+    
+    private int getColumnNumber(String columnName){
+    	int size=columnNames.size();
+    	for(int i=0;i<size;i++){
+    		if(((String)columnNames.get(i)).equalsIgnoreCase(columnName))
+    		return i;
+    	}
+    	return -1;
+    }
+    
+    
+    /** Gets a value of appropriate column
+     * @param colPos Column number
+     * @return a String value of the Column
+     */    
+    public String getValue( int colPos ) {
+        if( row != null ) {
+            return row[ colPos ];
+        }
+        return EMPTY_STRING;
+    }
+    
+    public String[] getRow(){
+    	 if( row != null ) {
+            return row;
+        }
+        return null;
+    	
+    }
+    
+    
+    /** Size of the Container ( aka amount of rows)
+     * @return amount of rows
+     */    
+    public int size() {
+        return size;
+    }
+    
+    /** Moves a "record pointer" to a next rows in a Container
+     * @return true if successul
+     */    
+    public boolean next() {
+        if( iter.hasNext() ) {
+            row = (String[])iter.next();
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean move(int i)	{
+    	reset();
+    	int j=0;
+    	while( iter.hasNext() ) {  		
+            row = (String[])iter.next();
+            if(j++==i) return true;
+         }
+        return false;   	
+    }
+    	
+ 
+    
+    /** Move record pointer to the beginning of the Container
+     */    
+    public void reset() {
+        iter = ll.iterator();
+    }
+    
+    /**
+     * @param sql
+     * @return  */    
+    private LinkedList runSQL(String sql) {
+        LinkedList results = null;
+        try {
+            
+            SQLQuerierRemoteHome qrhome =
+            (SQLQuerierRemoteHome)EJBHomeFactory
+            .getFactory().lookUpHome("SQLQuerier",SQLQuerierRemoteHome.class);
+            
+            SQLQuerierRemote qr = qrhome.create();
+            
+            results = qr.execSQL(sql);
+            columnNames = (Vector) results.remove(0);
+            
+            
+        }
+        catch( Exception e) {
+            e.printStackTrace();
+        }
+        if(null == results) {
+            results = new LinkedList();
+        }
+        return results;
+        
+    }
+    
+    /** Getter for property ll.
+     * @return Value of property ll.
+     */
+    public java.util.LinkedList getLl() {
+        return ll;
+    }
+    
+    
+    
+	/**
+	 * Gets the columnNames
+	 * @return Returns a Vector
+	 */
+	public Vector getColumnNames() {
+		return columnNames;
+	}
+	/**
+	 * Sets the columnNames
+	 * @param columnNames The columnNames to set
+	 */
+	public void setColumnNames(Vector columnNames) {
+		this.columnNames = columnNames;
+	}
+
+
+}

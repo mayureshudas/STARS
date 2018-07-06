@@ -1,0 +1,104 @@
+package com.wb.stars.mq;
+
+import java.rmi.RemoteException;
+
+import javax.ejb.CreateException;
+import javax.naming.NamingException;
+import com.wb.stars.utils.WBException;
+import com.wb.stars.utils.WBLogger;
+import com.ibm.mq.MQException;
+import com.wb.stars.ejb.session.MQHandlerRemote;
+import com.wb.stars.ejb.session.MQHandlerRemoteHome;
+import com.wb.stars.ejb.utils.EJBHomeFactory;
+
+/** 
+ * Returns emails from the server
+ */
+public class MQWorker
+{
+	MQHandlerRemote m_mq;
+
+	public MQWorker()
+	{
+		try 
+		{
+			m_mq = getMQEjbRemoteInterface();
+		} 
+		catch (Exception e) 
+		{
+			System.out.println(e.getMessage());
+		}
+
+	}
+	
+	/**
+	 * returns the number of emails in ques
+	 */
+	public int getMessageCount() throws WBException
+	{
+		int result = 0;
+		try
+		{
+			result = m_mq.getMessageCount();
+		}
+		catch(RemoteException e)
+		{
+			System.out.println(e .getMessage() );			
+		}
+		
+		return result;
+	}	
+	
+
+	/**
+	 * returns the next message in the que
+	 */
+	public String getUTFMessage() throws WBException
+	{
+		String message = new String();
+		try
+		{
+			message = m_mq.getUTFMessage();
+		}
+		catch(RemoteException e)
+		{
+			System.out.println(e .getMessage() );
+		}
+		
+		return message;
+	}	
+	
+	/**
+	 * Sends a message to the que
+	 */
+	public void sendUTFMessage( String message ) throws WBException, MQException
+	{
+		try 
+		{
+			m_mq.sendUTFMessage( message );
+		} 
+		catch ( RemoteException e )
+		{
+			// System.out.println(e .getMessage() );
+			throw new WBException(e);
+			
+		}
+		catch (MQException ex)
+		{
+			throw new WBException(ex);
+		}
+	}
+
+	/**
+	 * gets a remote interface to the MQ handler EJB
+	 */
+	private MQHandlerRemote getMQEjbRemoteInterface() throws NamingException, RemoteException, CreateException 
+	
+	{
+		MQHandlerRemote mq = null;
+		MQHandlerRemoteHome mqhome = (MQHandlerRemoteHome) EJBHomeFactory.getFactory().lookUpHome("MQHandler", MQHandlerRemoteHome.class);
+		mq = mqhome.create();
+		return mq;
+	}
+
+}
